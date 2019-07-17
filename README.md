@@ -12,7 +12,6 @@ valve는 다음과 같은 프로젝트로 구성됩니다.
   * [valve-tools](https://github.com/opsnow-tools/valve-tools)
 * CI/CD 파이프라인
   * [valve-butler](https://github.com/opsnow-tools/valve-butler)
-* CI/CD 파이프라인)
   * [valve-builder](https://github.com/opsnow-tools/valve-builder)
 * 개발자 도구
   * [valve-ctl](https://github.com/opsnow-tools/valve-ctl)
