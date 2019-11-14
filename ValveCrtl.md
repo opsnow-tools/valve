@@ -254,4 +254,115 @@ ingress.extensions/sample-nodejs sample-nodejs.127.0.0.1.nip.io 80  7m20s
 "$ kubectl get pod,svc,ing -n development" 부분에 표시된 수행되는 pod이 1개 일 경우 정상 구동이다
 sample-nodejs.127.0.0.1.nip.io에 접속하여 화면을 확인한다
 
+### 샘플 프로젝트 삭제
+```
+valve rm
+```
 
+수행 화면
+```
+test-nodejs$ valve rm
+  
+$ helm ls --all
+>
+6/6
+>  docker-registry
+   heapster
+   kubernetes-dashboard
+   metrics-server
+   nginx-ingress
+   sample-nodejs-development
+```
+샘플 프로젝트를 선택하여 삭제 한다
+
+
+### valve로 원격 프로젝트 로컬에서 실행하기
+valve ctrl은 local directory에 있는 helm chats와 dockfile을 이용하여 local k8s에 배포를 한다. 
+이 때 로컬에 있는 helm chart가 아닌 원격에 있는 helm chart를 사용하여 로컬 k8s에 배포하는 기능을 제공한다
+```
+valve chart list
+valve on -e demo-chatbot
+```
+
+수행화면
+```
+$valse chart list
+alve chart list
+
+  
+
+$ helm repo update chartmuseum
+
+Hang tight while we grab the latest from your chart repositories...
+
+...Successfully got an update from the "chartmuseum" chart repository
+
+Update Complete.
+
+  
+
+$ curl -s https://chartmuseum-devops.coruscant.opsnow.com/api/charts | jq -r 'keys[]'
+
+# Enter spacebar & listing charts more
+
+...
+dcos-auto-provisioning
+demo-chatbot
+dr-alertnow-consumer
+...
+
+$ value on -e demo-chatbot
+
+# demo-chatbot
+
+$ helm repo update
+ls: charts: No such file or directory
+ 
+$ helm install demo-chatbot-development chartmuseum/demo-chatbot --version v0.0.1-20190516-0459 --namespace development
+
+Release "demo-chatbot-development" does not exist. Installing it now.
+NAME: demo-chatbot-development
+LAST DEPLOYED: Thu Nov 14 18:55:48 2019
+NAMESPACE: development
+STATUS: DEPLOYED
+
+RESOURCES:
+==> v1/Deployment
+NAME  READY  UP-TO-DATE  AVAILABLE  AGE
+demo-chatbot  0/1  1 0  0s
+
+==> v1/Pod(related)
+NAME READY  STATUS RESTARTS  AGE
+demo-chatbot-5f9878dc9f-fcsf4  0/1  ContainerCreating  0 0s
+
+==> v1/Service
+NAME  TYPE CLUSTER-IP EXTERNAL-IP  PORT(S)  AGE
+demo-chatbot  ClusterIP  10.106.174.94  <none> 80/TCP 0s
+
+==> v1beta1/Ingress
+NAME  HOSTS  ADDRESS  PORTS  AGE
+demo-chatbot  demo-chatbot.127.0.0.1.nip.io  80 0s
+ 
+
+==> v2beta1/HorizontalPodAutoscaler
+NAME  REFERENCE  TARGETS MINPODS  MAXPODS  REPLICAS  AGE
+demo-chatbot  Deployment/demo-chatbot  <unknown>/80%, <unknown>/80%  1  5  0 0s
+
+  
+NOTES:
+1. Get the application URL by running these commands:
+  
+
+$ helm ls demo-chatbot-development
+NAME  REVISION  UPDATED STATUS  CHART  APP VERSION  NAMESPACE
+demo-chatbot-development  1 Thu Nov 14 18:55:48 2019  DEPLOYED  demo-chatbot-v0.0.1-20190516-0459  0.0.0  development
+
+$ kubectl get pod -n development | grep demo-chatbot
+demo-chatbot-5f9878dc9f-fcsf4 0/1 ContainerCreating 0  0s
+demo-chatbot-5f9878dc9f-fcsf4 0/1 ContainerCreating 0  3s
+demo-chatbot-5f9878dc9f-fcsf4 0/1 ContainerCreating 0  5s
+demo-chatbot-5f9878dc9f-fcsf4 0/1 Running 0  7s
+
++ valve on success
+$
+```
