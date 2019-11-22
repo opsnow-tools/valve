@@ -1,6 +1,6 @@
 # 사전 준비 작업
 
-ubuntu 18.04.3 TLS
+ubuntu 18.04.3 LTS
 
 ## tfenv 설치
 
@@ -427,7 +427,7 @@ terraform destroy -var-file=efs.tfvars
 
 ---
 
-Next. Valve Clt를 사용한 프로젝트 배포
+Next. Valve Ctl를 사용한 프로젝트 배포
 
 ---
 
