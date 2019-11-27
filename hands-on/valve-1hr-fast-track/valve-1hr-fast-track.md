@@ -4,6 +4,7 @@
 
 소유중인 public domain
 Amazon Linux 2 AMI 기반 EC2 Instance
+ARN role에 SEOUL-SRE-K8S-BASTION이 있어야함
 
 ### AWS CLI 설정
 
@@ -29,19 +30,24 @@ valve toolbox install -l
 
 ### EKS 구축 환경 설정 후 구축
 
+terraform을 사용하여 eks를 구축할 때 terranform.tfvars부분을 변경해야한다
+이 파일을 적절히 수정 후 terraform을 사용하여 eks를 구축한다
+
 ```bash
-git clone 템플릿이 포함된 프로젝트를 다운받는다
-cp configure.tfvars.template configure.tfvars
-vi configure.tfvars
+git clone https://github.com/opsnow-tools/valve-eks.git
+cd valve-eks/example/eks-fast-track/
+cp terraform.tfvars.sample terraform.tfvars
+vi terraform.tfvars
 terraform init
-terraform plan -var-file configure.tfvars
-terraform apply -var-file configure.tfvars
+terraform plan
+terraform apply
 ```
 
-## CICD Tools 설치
+## CI/CD Tools 설치
 
-### valve-tools 이용하여 CICD Tools 설치
+### valve-tools 이용하여 CI/CD Tools 설치
 
+valve-tools는 eks에 사용을 지원하는 툴(kube-ingress, kube-system)들과 모니터링 툴(monitoring) 그리고 CI/CD를 위한 툴(devops)들을 손쉽게 설치할 수 있도록 만든 공개 프로젝트입니다
 valve-tools을 사용하여 필요한 툴들을 설치합니다.
 
 ```bash
@@ -54,24 +60,30 @@ cd valve-tools
 
 ### 1) helm init
 
+k8s에 배포를 도와주는 툴
+
 ### 2) kube-ingress
 
 ### 2-a) nginx-ingress-nodeport
 
+도메인으로 넘어온 트레픽을 k8s로 전달하는 nginx를 설치한다
+
 ```bash
-1. mydomain.io
+1. {public domain}
 Please select one. (1) : 1
-Enter your ingress domain [seoul-sre-{name}-eks.mydomain.io] : {name}.mydomain.io
+Enter your ingress domain [seoul-sre-{name}-eks.{public domain}] : {name}.{public domain}
 ```
 
-{name}  표시된 부분은 테라폼 설정파일에서 지정한 name 입니다.
+기본 도메인이 아닌 {name}.{public domain}형식의 도메인을 입력한다
 
 ### 3) kube-system
 
+k8s 시스템 어플리케이션을 설치한다
+
 ### 3-a) cluster-autoscaler
 
-최신 버전과 안정화 버전을 선택할 수 있습니다.
-앞으로 설치된 모든 버젼은 안정화된 버젼으로 설치하도록 합니다.
+최신 버전과 안정화 버전을 선택할 수 있다
+앞으로 설치된 모든 버젼은 안정화된 버젼으로 설치하도록 한다
 
 ### 3-b) efs-provisioner
 
@@ -86,6 +98,8 @@ Input your file system id. [fs-cd4******] : 엔터
 ### 3-e) metrics-server
 
 ### 4) monitoring
+
+k8s 모니터링을 위한 툴을 설치한다
 
 ### 4-a) prometheus
 
@@ -103,30 +117,27 @@ Enter GRAFANA_LDAP : 엔터
 
 ### 5) devops
 
+CI/CD 파이프라인 구성을 위한 툴 설치한다
+
 ### 5-a) chartmuseum
 
 ### 5-b) docker-registry
 
 ### 5-c) jenkins
 
-```bash
-Enter PASSWORD [password] : 암호입력
-```
-
 ### 5-d) sonarqube
 
 ### 5-e) sonatype-nexus
 
-```bash
-Enter PASSWORD [password] : 암호입력
-```
-
 ### 6) save variables
+
+툴 설치에 사용된 값들을 기록한다
 
 ### 7) Exit
 
+valve-tools를 종료한다
 
-## 설치된 프로그램 확인
+## 설치된 프로그램들 도메인 확인
 
 설치된 프로그램으로 접근할 수 있는 도메인 목록을 확인한다
 
@@ -136,81 +147,75 @@ kubectl get ing -A
 
 ### Monitoring tools 확인
 
-### Devops tools 확인
+k8s의 동작 상태를 모니터링 해본다
 
-### EKS 삭제
+#### Grafana 접속 및 확인
 
-테라폼으로 생성한 자원을 삭제할 때는 생성한 역순으로 실행한다
-
-vpc --> sq --> cluster --> network --> efs 순서로 리소스 생성했으므로 역순으로 삭제를 한다
-efs --> network --> cluster --> sq --> vpc 순서로 리소스를 삭제한다.
-
-main.tf 파일이 있는 폴더로 이동하여 terraform destroy 명령어를 실행한다.
-리소스 생성시 .tfvars 파일을 사용했으면 삭제시에도 사용한다.
-
-```bash
-terraform destroy -var-file=efs.tfvars
-```
-
----
-
-Next. Valve Ctl를 사용한 프로젝트 배포
-
----
-
-이 아래 라인은 업데이트가 필요하다
-
-## 젠킨스에서 웹 Application 소스 배포
-### 로컬 PC에서 아래 명령어로 젠킨스 도메인 정보 확인한다.
-```bash
-$ kubectl get ing -A
-NAMESPACE NAME HOSTS ADDRESS PORTS AGE
-devops chartmuseum chartmuseum-devops.andy.opsnow.io 80 23m
-devops docker-registry docker-registry-devops.andy.opsnow.io 80 22m
-devops jenkins jenkins-devops.andy.opsnow.io 80 21m
-devops sonarqube-sonarqube sonarqube-devops.andy.opsnow.io 80 19m
-devops sonatype-nexus sonatype-nexus-devops.andy.opsnow.io 80 18m
-monitor grafana grafana-monitor.andy.opsnow.io 80 24m
-```
-예제 에서는 jenkins-devops.{name}.opsnow.io 확인.
-### 젠킨스 접속
-젠킨스 접속 URL : http://jenkins-devops.{name}.opsnow.io
+Grafana 접속 URL : http://grafana-monitor.{name}.{public domain}
 로그인 아이디 : admin
-암호 : 설치 시 입력했던 암호
-### 젠킨스 환경 설정에서 "Kubernetes URL" 항목을 다음과 같이 수정한다. (443 추가)
-https://kubernetes.default:443
-### EKS 클러스트 롤 바인딩
-valve-tools 설치된 폴더로 이동해서 다음 명령어 실행한다.
+암호 : 설치 시 입력했던 암호(기본 암호 : password)
+
+Dashboards -> Manage -> Import
+grafana.com dashboard id에 다음의 id를 추가한다
+10512
+
+이 후 dashboard에서 동작확인한다
+
+### Devops tools 확인 및 sample 프로젝트 배포
+
+#### Jenkins 접속 및 확인
+
+Jenkins 접속 URL : http://grafana-monitor.{name}.{public domain}
+로그인 아이디 : admin
+암호 : 설치 시 입력했던 암호(기본 암호 : password)
+
+#### Kubernetes 연결 설정
+
+Jenkins -> Manage Jenkins -> Configure System -> Kubernetes URL에 443포트로 연결하도록 설정한다
+
 ```bash
-$ cd valve-tools/templates/jenkins
-$ kubectl apply -f jenkins-rollbinding.yaml
-clusterrolebinding.rbac.authorization.k8s.io/valve:jenkins created
+https://kubernetes.default:443
+```
 
-$ kubectl get clusterrolebinding    # 롤 바인딩 정보 조회, valve:jenkins 정보 있는지 확인한다.
-NAME AGE
-admin:devops:default 58m
-aws-node 6h14m
-cluster-admin  6h14m
-...
-valve:jenkins  35s
+### EKS 클러스트 롤 바인딩
 
-$ kubectl get clusterrolebinding valve:jenkins -o yaml      # 상세 정보 조회
-kind: ClusterRole
-name: system:serviceaccount:devops:default
+valve-tools 설치된 폴더로 이동해서 다음 명령어 실행한다.
+
+```bash
+cd valve-tools/templates/jenkins
+kubectl apply -f jenkins-rollbinding.yaml
+kubectl get clusterrolebinding    # 롤 바인딩 정보 조회, valve:jenkins 정보 있는지 확인한다.
+kubectl get clusterrolebinding valve:jenkins -o yaml      # 상세 정보 조회
 ```
 
 ### Multibranch Pipeline 생성
+
 Branch Source > GitHub > Repository HTTPS URL 항목에서
 [https://github.com/gelius7/sample-vue.git](https://github.com/gelius7/sample-vue.git) 등록한다.
 생성한 task가 정상적으로 실행되는 지 로그를 확인한다.
 
 ### 웹 Application 서비스 확인
+
 젠킨스에서 배포가 정상적으로 이루어 지면 아래 명령어를 이용해 접속 도메인 정보 확인하고, 브라우저로 웹페이지에 접속해서 서비스가 정상인지 확인한다.
+
 ```bash
-$ kubectl get ing -A
-sample-dev sample-vue  sample-vue-dev.{name}.opsnow.io 80  55s
+kubectl get ing -A
 ```
+
 웹 브라우저로 아래 URL에 접속하여 웹 페이지가 정상적으로 나오는지 확인한다.
+
+```bash
+http://sample-vue-dev.{name}.{public domain}
 ```
-http://sample-vue-dev.{name}.opsnow.io
+
+### EKS 삭제
+
+terraform으로 삭제한다
+
+```bash
+terraform destroy
 ```
+
+---
+
+Next. Valve Ctl를 사용한 프로젝트 배포
