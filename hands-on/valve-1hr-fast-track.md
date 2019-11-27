@@ -41,14 +41,15 @@ vi terraform.tfvars
 terraform init
 terraform plan
 terraform apply
+cd
 ```
 
 ## CI/CD Tools 설치
 
 ### valve-tools 이용하여 CI/CD Tools 설치
 
-valve-tools는 eks에 사용을 지원하는 툴(kube-ingress, kube-system)들과 모니터링 툴(monitoring) 그리고 CI/CD를 위한 툴(devops)들을 손쉽게 설치할 수 있도록 만든 공개 프로젝트입니다
-valve-tools을 사용하여 필요한 툴들을 설치합니다.
+valve-tools는 eks에 사용을 지원하는 툴(kube-ingress, kube-system)들과 모니터링 툴(monitoring) 그리고 CI/CD를 위한 툴(devops)들을 손쉽게 설치할 수 있도록 만든 공개 프로젝트이다
+valve-tools을 사용하여 필요한 툴들을 설치한다
 
 ```bash
 git clone https://github.com/opsnow-tools/valve-tools
@@ -76,14 +77,16 @@ Enter your ingress domain [seoul-sre-{name}-eks.{public domain}] : {name}.{publi
 
 기본 도메인이 아닌 {name}.{public domain}형식의 도메인을 입력한다
 
+
 ### 3) kube-system
 
 k8s 시스템 어플리케이션을 설치한다
 
-### 3-a) cluster-autoscaler
-
+>**Note**:
 최신 버전과 안정화 버전을 선택할 수 있다
-앞으로 설치된 모든 버젼은 안정화된 버젼으로 설치하도록 한다
+이 문서에서 설치되는 모든 버젼은 안정화 버젼이다
+
+### 3-a) cluster-autoscaler
 
 ### 3-b) efs-provisioner
 
@@ -91,15 +94,13 @@ k8s 시스템 어플리케이션을 설치한다
 Input your file system id. [fs-cd4******] : 엔터
 ```
 
-### 3-c) heapster
+### 3-c) kube-state-metrics
 
-### 3-d) kube-state-metrics
-
-### 3-e) metrics-server
+### 3-d) metrics-server
 
 ### 4) monitoring
 
-k8s 모니터링을 위한 툴을 설치한다
+모니터링 전문 툴을 설치한다
 
 ### 4-a) prometheus
 
@@ -177,7 +178,7 @@ Jenkins -> Manage Jenkins -> Configure System -> Kubernetes URL에 443포트로 
 https://kubernetes.default:443
 ```
 
-### EKS 클러스트 롤 바인딩
+#### EKS 클러스트 롤 바인딩
 
 valve-tools 설치된 폴더로 이동해서 다음 명령어 실행한다.
 
@@ -188,13 +189,13 @@ kubectl get clusterrolebinding    # 롤 바인딩 정보 조회, valve:jenkins �
 kubectl get clusterrolebinding valve:jenkins -o yaml      # 상세 정보 조회
 ```
 
-### Multibranch Pipeline 생성
+#### Multibranch Pipeline 생성
 
 Branch Source > GitHub > Repository HTTPS URL 항목에서
 [https://github.com/gelius7/sample-vue.git](https://github.com/gelius7/sample-vue.git) 등록한다.
 생성한 task가 정상적으로 실행되는 지 로그를 확인한다.
 
-### 웹 Application 서비스 확인
+#### 웹 Application 서비스 확인
 
 젠킨스에서 배포가 정상적으로 이루어 지면 아래 명령어를 이용해 접속 도메인 정보 확인하고, 브라우저로 웹페이지에 접속해서 서비스가 정상인지 확인한다.
 
@@ -218,4 +219,4 @@ terraform destroy
 
 ---
 
-Next. Valve Ctl를 사용한 프로젝트 배포
+Next. [Valve Ctl를 사용한 프로젝트 배포](valve-ctl-30min-quickstart.md)
