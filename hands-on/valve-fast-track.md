@@ -196,13 +196,15 @@ k8s의 동작 상태를 모니터링 합니다.
 
 #### Grafana 접속 및 확인
 
+```web
 Grafana 접속 URL : http://grafana-monitor.{name}.{public domain}   
 로그인 아이디 : admin  
 암호 : 설치 시 입력했던 암호(기본 암호 : password)  
 
 Dashboards -> Manage -> Import  
 grafana.com dashboard id에 다음의 id를 추가합니다.  
-10512  
+10512 
+``` 
 
 이 후 dashboard에서 동작 확인 합니다.
 
@@ -210,9 +212,11 @@ grafana.com dashboard id에 다음의 id를 추가합니다.
 
 #### Jenkins 접속 및 확인
 
+```web
 Jenkins 접속 URL : http://grafana-monitor.{name}.{public domain}  
 로그인 아이디 : admin  
 암호 : 설치 시 입력했던 암호(기본 암호 : password)  
+```
 
 #### Kubernetes 연결 설정
 
@@ -237,8 +241,7 @@ kubectl get clusterrolebinding valve:jenkins -o yaml      # 상세 정보 조회
 
 #### Multibranch Pipeline 생성
 
-Branch Source > GitHub > Repository HTTPS URL 항목에서
-[https://github.com/gelius7/sample-vue.git](https://github.com/gelius7/sample-vue.git) 등록합니다.  
+Branch Source > GitHub > Repository HTTPS URL 항목에서 [https://github.com/gelius7/sample-vue.git](https://github.com/gelius7/sample-vue.git) 등록합니다.  
 생성한 task가 정상적으로 실행되는 지 로그를 확인합니다.  
 
 #### 웹 Application 서비스 확인
