@@ -30,11 +30,11 @@ curl -sL repo.opsnow.io/valve-ctl/install | bash
 ```
 수행 화면
 ```
-zlemy@59a1ced0f168:~$ curl -sL repo.opsnow.io/valve-ctl/install | bash
+~$ curl -sL repo.opsnow.io/valve-ctl/install | bash
 $ INPUT Version :
-$ github Version : v2.0.33
-# version: v2.0.33
-zlemy@59a1ced0f168:~$ 
+$ github Version : v2.0.54
+# version: v2.0.54
+~$ 
 ```
 ## Update
 ```
@@ -42,14 +42,14 @@ valve update
 ```
 수행 화면
 ```
-zlemy@59a1ced0f168:~$ valve update
-# version: v2.0.33
+~$ valve update
+# version: v2.0.54
 $ INPUT Version :
-$ github Version : v2.0.33
-# version: v2.0.33
+$ github Version : v2.0.54
+# version: v2.0.54
 
 +
-zlemy@59a1ced0f168:~$
+~$
 ```
 ## Help
 ```
@@ -57,39 +57,66 @@ valve help
 ```
 수행화면 
 ```
-zlemy@59a1ced0f168:~$ valve help
+~$ valve help
 
 ================================================================================
-                                  _  _ _ ____
-__ ____ _| |_ _____  ___| |_| | |___ \
-\ \ / / _` | \ \ / / _ \  / __| __| | __) |
+            _                  _   _   ____
+__   ____ _| |_   _____    ___| |_| | |___ \
+\ \ / / _` | \ \ / / _ \  / __| __| |   __) |
  \ V / (_| | |\ V /  __/ | (__| |_| |  / __/
   \_/ \__,_|_| \_/ \___|  \___|\__|_| |_____|
-
 ================================================================================
-Version : v2.0.33
+Version : v2.0.54
 Usage: valve {Command} params..
 
 Commands:
 V2:
-h, help 현재 화면을 보여줍니다.
-u, update valve 를 최신버전으로 업데이트 합니다.
-v, version  valve 버전을 확인 합니다.
+    help                    현재 화면을 보여줍니다.
+
+    [valve-ctl tool 관리]
+    update                  valve 를 최신버전으로 업데이트 합니다.
+    version                 valve 버전을 확인 합니다.
+    config                  저장된 설정을 조회 합니다.
+    toolbox                 Local Kubernetes 환경을 구성하기 위한 툴 설치 및 환경 구성을 합니다.
+
+    [valve-ctl 개발자 도구]
+    search                  프로젝트 배포에 필요한 템플릿 리스트를 조회합니다.
+    fetch                   프로젝트 배포에 필요한 템플릿를 개발 소스에 세팅(설치)합니다.
+    on                      프로젝트를 Local Kubernetes에 배포합니다.
+    off                     배포한 프로젝트를 삭제합니다.
+
+    chart                   외부 프로젝트의 차트 릴리즈 목록을 확인하고 stable 버전을 관리합니다.
+    repo                    외부 프로젝트 템플릿 레파지토리를 등록합니다.
+
+    get                     배포한 프로젝트에 대한 정보를 확인합니다.
+    ssh                     배포한 리소스의 pod에 ssh접속을 합니다.
+    top                     배포한 리소스의 CPU, Memory 사용량을 조회합니다.
+    log                     배포한 리소스의 로그를 조회합니다.
+...
+```
+
+## valve 이용할 툴 설치
+```
+$ valve toolbox install -l
+
+# CONFIG Set
+
+# linux [apt]
+
+# 2019-12-06 01:22:48
+================================================================================
+
+# update...
+Hit:1 https://download.docker.com/linux/ubuntu bionic InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu bionic InRelease                                           
+Get:4 http://archive.ubuntu.com/ubuntu bionic-updates InRelease [88.7 kB]
 ...
 ```
 
 ## valve 초기화
 ```
 k8s 환경 인프라 구축
-$ valve init
-..
-
-강제 재설치
-$ valve init -f 
-...
-
-삭제 후 재설치
-$ valve init -d
+$ valve toolbox install -c
 ...
 ```
 
@@ -228,12 +255,13 @@ test-nodejs$
 ### 배포 결과 확인
 valve ls 명령을 사용하여 k8s에 배포된 pod 목록을 조회한다 
 ```
-valve ls
+valve get -a
+valve get --all
 ```
 
 수행 화면
 ```
-test-nodejs$ valve ls
+test-nodejs$ valve get -a
 
 $ helm ls --all | grep development
 NAME REVISION  UPDATED STATUS  CHART APP VERSION  NAMESPACE
@@ -256,113 +284,123 @@ sample-nodejs.127.0.0.1.nip.io에 접속하여 화면을 확인한다
 
 ### 샘플 프로젝트 삭제
 ```
-valve rm
+valve off --helm 
 ```
 
 수행 화면
 ```
-test-nodejs$ valve rm
+test-nodejs$ valve off --helm sample-nodejs-development
   
-$ helm ls --all
->
-6/6
->  docker-registry
-   heapster
-   kubernetes-dashboard
-   metrics-server
-   nginx-ingress
-   sample-nodejs-development
 ```
 샘플 프로젝트를 선택하여 삭제 한다
 
 
 ### valve로 원격 프로젝트 로컬에서 실행하기
-valve ctrl은 local directory에 있는 helm chats와 dockfile을 이용하여 local k8s에 배포를 한다. 
+valve-ctl은 local directory에 있는 helm chats와 dockfile을 이용하여 local k8s에 배포를 한다. 
 이 때 로컬에 있는 helm chart가 아닌 원격에 있는 helm chart를 사용하여 로컬 k8s에 배포하는 기능을 제공한다
+
 ```
 valve chart list
-valve on -e demo-chatbot
+valve chart version -n
+valve on -e
 ```
 
 수행화면
 ```
-$valse chart list
-alve chart list
+외부 chart list 를 통해 chart를 검색
 
-  
+~$ valve chart list
 
 $ helm repo update chartmuseum
-
 Hang tight while we grab the latest from your chart repositories...
-
+...Skip local chart repository
+...Successfully got an update from the "stable" chart repository
 ...Successfully got an update from the "chartmuseum" chart repository
-
-Update Complete.
-
-  
+Update Complete. ⎈ Happy Helming!⎈ 
 
 $ curl -s https://chartmuseum-devops.coruscant.opsnow.com/api/charts | jq -r 'keys[]'
 
 # Enter spacebar & listing charts more
-
 ...
 dcos-auto-provisioning
 demo-chatbot
 dr-alertnow-consumer
 ...
+sample-vue
+sample-web
+...
+```
 
-$ value on -e demo-chatbot
+```
+검색한 chart 이름으로 version을 검색
 
-# demo-chatbot
+~$ valve chart version -n sample-vue
 
-$ helm repo update
-ls: charts: No such file or directory
- 
-$ helm install demo-chatbot-development chartmuseum/demo-chatbot --version v0.0.1-20190516-0459 --namespace development
+$ helm repo update chartmuseum
+Hang tight while we grab the latest from your chart repositories...
+...Skip local chart repository
+...Successfully got an update from the "stable" chart repository
+...Successfully got an update from the "chartmuseum" chart repository
+Update Complete. ⎈ Happy Helming!⎈ 
 
-Release "demo-chatbot-development" does not exist. Installing it now.
-NAME: demo-chatbot-development
-LAST DEPLOYED: Thu Nov 14 18:55:48 2019
+$ curl -s https://chartmuseum-devops.coruscant.opsnow.com/api/charts/sample-vue | jq -r '.[].version'
+
+# Enter spacebar & listing charts more
+
+v0.0.1-20191004-0857
+```
+
+```
+검색한 chart 이름과 version을 이용하여 valve on
+
+~$ value on -e sample-vue:v0.0.1-20191004-0857
+
+# sample-vue:v0.0.1-20191004-0857
+sample-vue:v0.0.1-20191004-0857
+
+# It will be used stable chart
+
+$ helm install sample-vue-development chartmuseum/sample-vue --version v0.0.1-20191004-0857 --namespace development
+Release "sample-vue-development" does not exist. Installing it now.
+NAME:   sample-vue-development
+LAST DEPLOYED: Fri Dec  6 01:45:00 2019
 NAMESPACE: development
 STATUS: DEPLOYED
 
 RESOURCES:
 ==> v1/Deployment
-NAME  READY  UP-TO-DATE  AVAILABLE  AGE
-demo-chatbot  0/1  1 0  0s
+NAME        READY  UP-TO-DATE  AVAILABLE  AGE
+sample-vue  0/1    1           0          0s
 
 ==> v1/Pod(related)
-NAME READY  STATUS RESTARTS  AGE
-demo-chatbot-5f9878dc9f-fcsf4  0/1  ContainerCreating  0 0s
+NAME                         READY  STATUS             RESTARTS  AGE
+sample-vue-5777f5d57f-4hdpw  0/1    ContainerCreating  0         0s
 
 ==> v1/Service
-NAME  TYPE CLUSTER-IP EXTERNAL-IP  PORT(S)  AGE
-demo-chatbot  ClusterIP  10.106.174.94  <none> 80/TCP 0s
+NAME        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
+sample-vue  ClusterIP  10.105.202.213  <none>       80/TCP   0s
 
 ==> v1beta1/Ingress
-NAME  HOSTS  ADDRESS  PORTS  AGE
-demo-chatbot  demo-chatbot.127.0.0.1.nip.io  80 0s
- 
+NAME        HOSTS                     ADDRESS  PORTS  AGE
+sample-vue  sample-vue.jj0.opsnow.io  80       0s
 
 ==> v2beta1/HorizontalPodAutoscaler
-NAME  REFERENCE  TARGETS MINPODS  MAXPODS  REPLICAS  AGE
-demo-chatbot  Deployment/demo-chatbot  <unknown>/80%, <unknown>/80%  1  5  0 0s
+NAME        REFERENCE              TARGETS                       MINPODS  MAXPODS  REPLICAS  AGE
+sample-vue  Deployment/sample-vue  <unknown>/80%, <unknown>/80%  1        5        0         0s
 
-  
+
 NOTES:
 1. Get the application URL by running these commands:
-  
 
-$ helm ls demo-chatbot-development
-NAME  REVISION  UPDATED STATUS  CHART  APP VERSION  NAMESPACE
-demo-chatbot-development  1 Thu Nov 14 18:55:48 2019  DEPLOYED  demo-chatbot-v0.0.1-20190516-0459  0.0.0  development
 
-$ kubectl get pod -n development | grep demo-chatbot
-demo-chatbot-5f9878dc9f-fcsf4 0/1 ContainerCreating 0  0s
-demo-chatbot-5f9878dc9f-fcsf4 0/1 ContainerCreating 0  3s
-demo-chatbot-5f9878dc9f-fcsf4 0/1 ContainerCreating 0  5s
-demo-chatbot-5f9878dc9f-fcsf4 0/1 Running 0  7s
+$ helm ls sample-vue-development
+NAME                  	REVISION	UPDATED                 	STATUS  	CHART                          	APP VERSION	NAMESPACE  
+sample-vue-development	1       	Fri Dec  6 01:45:00 2019	DEPLOYED	sample-vue-v0.0.1-20191004-0857	v0.0.0     	development
+
+$ kubectl get pod -n development | grep sample-vue
+sample-vue-5777f5d57f-4hdpw   0/1     ContainerCreating   0          1s
+sample-vue-5777f5d57f-4hdpw   0/1     ContainerCreating   0          4s
+sample-vue-5777f5d57f-4hdpw   0/1     Running   0          6s
 
 + valve on success
-$
 ```
