@@ -2,7 +2,7 @@
 
 ## 본 문서에서 구축할 아키텍쳐 구성도
 
-Terraform을 사용하여 AWS에 VPC를 하나 생성 한 뒤 EKS와 EC2기반 Worker 인스턴스를 하나 생성합니다. 이 때  필요한 보안 그룹과 Storage, network를 생성하여 설정하여 줍니다.
+Terraform을 사용하여 AWS에 VPC를 하나 생성 한 뒤 EKS와 EC2기반 Worker 인스턴스를 하나 생성합니다. 이 때  필요한 보안 그룹과 Storage, network를 생성하여 설정하여 줍니다.  
 
 생성된 eks에 외부 연결을 위한 ingress를 설정하고 domain과 연결하여 줍니다.  
 이 후 k8s를 감시할 수 있는 모니터링 툴(promethus, grafana)과 CD/CI툴(jenkins)에게 sub domain을 연결하여 접속할 수 있도록 설정하여 줍니다.  
@@ -11,6 +11,8 @@ Terraform을 사용하여 AWS에 VPC를 하나 생성 한 뒤 EKS와 EC2기반 W
 
 - Root domain
 - Amazon Linux 2 AMI 기반 EC2 Instance
+- Bastion에서 사용할 terraform 실행을 위한 Administrator Role
+- EKS에서 사용할 worker node로 접속할 때 사용할 keypair
 
 ### AWS CLI 설정
 
