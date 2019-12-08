@@ -22,4 +22,4 @@ valve는 다음과 같은 프로젝트로 구성됩니다.
 
 ## Hands-on guide to Valve
 * [밸브를 통한 애플리케이션 배포 빠르게 시작하기](./hands-on/valve-ctl-30min-quickstart.md)
-* [1시간 밸브 패스트트랙](./hands-on/valve-1hr-fast-track/valve-1hr-fast-track.md)
+* [1시간 밸브 패스트트랙](./hands-on/valve-fast-track.md)
