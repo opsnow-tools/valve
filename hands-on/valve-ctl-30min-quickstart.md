@@ -1,14 +1,23 @@
-# Valve-Ctrl를 사용한 샘플 프로젝트 배포 및 구동
+# `valve-ctl` (Valve Ctrl) 를 사용한 샘플 프로젝트 배포 및 구동
 
 모든 설명 기준은 MacOS bash shell 기준
 
-# Coruscant 개발 환경 구축 목적
+## `valve-ctl` 개발 환경 구축 목적
 
-* 개발, 테스트, 운영 환경 통일화
-* 배포 pipeline 자동화
-* 비용절감, 배포속도향상, 클라우드 상호 이식성 등(+ Kubernetes 사용 경력)
+`valve-ctl`은 다음과 같은 기능을 제공합니다.
 
-# Docker, Kubernetes 및 tools 설치
+- 컨테이너 빌드, 배포 표준 템플릿 제공
+- 사용자 정의 표준 템플릿 정의 및 사용 방법 제공
+- 개발중인 애플리케이션 개인 테스트 방법 제공
+- 사용자 CLI 정의 및 통합 방법 제공
+
+다음 두 개의 command로 로컬 쿠버네티스 클러스터에 application을 세팅하고 구동할 수 있습니다.
+- `~$ valve fetch`   
+- `~$ valve on`
+
+# 로컬 쿠버네티스 환경 구축
+
+Docker, Kubernetes 및 tools 설치
 **Docker 설치**
 Docker for Mac : [Get Docker Desktop for Mac (Stable)](https://download.docker.com/mac/stable/Docker.dmg)
 
@@ -19,10 +28,6 @@ Docker-Desktop -> Preference -> Kubernetes 활성화
 
     ruby -e "$(curl -fsSL [https://raw.githubusercontent.com/Homebrew/install/master/install)]"
 
-**nodejs 설치**
-
-    brew install node
-
 # Valve-Ctl 설치 및 로컬 인프라 초기화
 ## Install
 ```
@@ -32,8 +37,8 @@ curl -sL repo.opsnow.io/valve-ctl/install | bash
 ```
 ~$ curl -sL repo.opsnow.io/valve-ctl/install | bash
 $ INPUT Version :
-$ github Version : v2.0.54
-# version: v2.0.54
+$ github Version : v2.0.66
+# version: v2.0.66
 ~$ 
 ```
 ## Update
@@ -43,10 +48,10 @@ valve update
 수행 화면
 ```
 ~$ valve update
-# version: v2.0.54
-$ INPUT Version :
-$ github Version : v2.0.54
-# version: v2.0.54
+$ INPUT Version : 
+$ github Version : v2.0.66
+# version: v2.0.66
+# Install start...
 
 +
 ~$
@@ -66,7 +71,7 @@ __   ____ _| |_   _____    ___| |_| | |___ \
  \ V / (_| | |\ V /  __/ | (__| |_| |  / __/
   \_/ \__,_|_| \_/ \___|  \___|\__|_| |_____|
 ================================================================================
-Version : v2.0.54
+Version : v2.0.66
 Usage: valve {Command} params..
 
 Commands:
@@ -96,8 +101,9 @@ V2:
 ```
 
 ## valve 이용할 툴 설치
+`valve toolbox install -l && valve toolbox install -c`
 ```
-$ valve toolbox install -l
+~$ valve toolbox install -l
 
 # CONFIG Set
 
@@ -116,183 +122,293 @@ Get:4 http://archive.ubuntu.com/ubuntu bionic-updates InRelease [88.7 kB]
 ## valve 초기화
 ```
 k8s 환경 인프라 구축
-$ valve toolbox install -c
+~$ valve toolbox install -c
+
+# CONFIG Set
+
+$ helm init --upgrade
 ...
 ```
 
 ## 샘플 프로젝트 실행하기
 ### 샘플 프로젝트  준비
-nodejs로 작성된 샘플 프로젝트를 github로부터 받은 후 관련 라이브러리를 설치합니다
+html로 작성된 샘플 프로젝트를 github로부터 받습니다.
 ```
-git clone https://github.com/opsnow-tools/test-nodejs.git
-cd test-nodejs
-npm install
+~$ git clone https://github.com/opsnow-tools/hands-on-web.git
+
+~$ cd hands-on-web
+
+hands-on-web$ tree
+.
+├── README.md
+└── src
+    ├── favicon.ico
+    └── index.html
+
+1 directory, 3 files
+
+hands-on-web$ 
 ```
-수행화면
+
+### `valve search` 를 사용하여 template 검색
+`valve search` 명령어는 app을 배포하기 위해 필요한 템플릿 검색을 수행합니다.
 ```
-$ git clone https://github.com/opsnow-tools/test-nodejs.git
-Cloning into 'test-nodejs'...
-remote: Enumerating objects: 109, done.
-remote: Total 109 (delta 0), reused 0 (delta 0), pack-reused 109
-Receiving objects: 100% (109/109), 26.82 KiB | 13.41 MiB/s, done.
-Resolving deltas: 100% (44/44), done.
-$ cd test-nodejs/
-test-nodejs$ npm install
+~$ valve search
+[Default Template List]
+R-batch
+java-mvn-lib
+java-mvn-springboot
+java-mvn-tomcat
+js-npm-nginx
+js-npm-nodejs
+terraform
+web-nginx
+
+[Custom Template List]   ex) [Repo Name]/[Template Name]
+
+Use this command 'valve fetch -h' and fetch your template
+~$
 ```
+
 ### valve를 사용하여 k8s 기반 구동 파일 생성
-valve fetch명령어는 k8s 배포를  위한 관련 파일을 생성합니다
-먼저 샘플 프로젝트에 존재하는 샘플 파일을 먼저 삭제 후 valve fetch명령을 수행합니다
+`valve fetch` 명령어는 k8s 배포를  위한 관련 파일을 생성합니다
+먼저 샘플 프로젝트에 존재하는 샘플 파일을 먼저 삭제 후 `valve fetch` 명령을 수행합니다
 ```
-rm -rf charts Dockerfile Jenkinsfile draft.toml
-valve fetch --name js-npm-nodejs --group sample
+valve fetch --name web-nginx --group simple --service web
+
+or
+
+valve fetch -n web-nginx -g simple -s web
 ```
 
 수행 화면
 ```
-test-nodejs$ rm Dockerfile Jenkinsfile draft.toml
-test-nodejs$ rm -rf charts/
-test-nodejs$ 
-test-nodejs$ valve fetch --name js-npm-nodejs --group sample
-/usr/local/share/valve-core/_template/fetch: line 121: [: -v: unary operator expected
-# valve-ctl version: v2.0.32
-$ sed -i -e s|def SERVICE_GROUP = .*|def SERVICE_GROUP = sample| Jenkinsfile
+hands-on-web$ valve fetch -n web-nginx -g simple -s web
 
-$ sed -i -e s|def SERVICE_NAME = .*|def SERVICE_NAME = nodejs| Jenkinsfile
+# valve-ctl version: v2.0.66
 
-$ sed -i -e s|def REPOSITORY_URL = .*|def REPOSITORY_URL = https://github.com/opsnow-tools/test-nodejs.git| Jenkinsfile
+# Default template setting success
+
+# Template: web-nginx
+
+$ sed -i -e s|def SERVICE_GROUP = .*|def SERVICE_GROUP = simple| Jenkinsfile
+
+$ sed -i -e s|def SERVICE_NAME = .*|def SERVICE_NAME = web| Jenkinsfile
+
+$ sed -i -e s|def REPOSITORY_URL = .*|def REPOSITORY_URL = https://github.com/opsnow-tools/hands-on-web.git| Jenkinsfile
 
 + valve fetch success
-test-nodejs$ 
+hands-on-web$
 ```
 
-valve fetch를 통하여 새롭게 생성된 Dockerfile, Jenkinsfile, draft.toml, charts를 확인할 수 있습니다
+`valve fetch` 를 통하여 새롭게 생성된 Dockerfile, Jenkinsfile, draft.toml, charts를 확인할 수 있습니다
 ### valve 사용하여 샘플 프로젝트를 k8s에 배포
-valve on 명령어를 사용하여 k8s에 배포를 합니다
+`valve on` 명령어를 사용하여 k8s에 배포를 합니다
 ```
 valve on
 ```
 
 수행 화면
 ```
-test-nodejs$ valve on
+hands-on-web$ valve on
 
-$ docker build -t docker-registry.127.0.0.1.nip.io:30500/sample-nodejs:latest .
-Sending build context to Docker daemon  6.739MB
-Step 1/6 : FROM node:10-alpine
----> 0aa7bb41deca
-Step 2/6 : RUN apk add --no-cache bash curl
----> Using cache
----> 8b9626886512
-Step 3/6 : EXPOSE 3000
----> Using cache
----> ce39ae42af4c
-Step 4/6 : WORKDIR /data
----> Using cache
----> 46eca71c889f
-Step 5/6 : CMD ["npm", "run", "start"]
----> Using cache
----> f0426783f978
-Step 6/6 : ADD . /data
----> cacf9fc83a4b
-Successfully built cacf9fc83a4b
-Successfully tagged docker-registry.127.0.0.1.nip.io:30500/sample-nodejs:latest
+$ docker build -t docker-registry.127.0.0.1.nip.io:30500/simple-web:latest .
+Sending build context to Docker daemon  15.36kB
+Step 1/4 : FROM nginx:1.13-alpine
+ ---> ebe2c7c61055
+Step 2/4 : RUN apk add --no-cache bash curl
+ ---> Using cache
+ ---> 91b9349a5465
+Step 3/4 : EXPOSE 80
+ ---> Using cache
+ ---> a20c486506f7
+Step 4/4 : COPY src /usr/share/nginx/html
+ ---> Using cache
+ ---> 79749dfc2332
+Successfully built 79749dfc2332
+Successfully tagged docker-registry.127.0.0.1.nip.io:30500/simple-web:latest
 
-$ docker push docker-registry.127.0.0.1.nip.io:30500/sample-nodejs:latest
-The push refers to repository [docker-registry.127.0.0.1.nip.io:30500/sample-nodejs]
-1ba506e91bfa: Pushed
-6d7324921476: Layer already exists
-426823113004: Layer already exists
-5cd6e0dd086a: Layer already exists
-e44790980479: Layer already exists
-9392007c1686: Layer already exists
-f1b5933fe4b5: Layer already exists
-latest: digest: sha256:8179ec458c3f876dad3cb9792fd28d333d5d77d1a931bdbd15f4b13cbf603a85 size: 1786
+$ docker push docker-registry.127.0.0.1.nip.io:30500/simple-web:latest
+The push refers to repository [docker-registry.127.0.0.1.nip.io:30500/simple-web]
+9390ec2ccf86: Pushed 
+f6c78e6a8d4c: Pushed 
+a79fe6dff072: Pushed 
+87deea508850: Pushed 
+90c4db1d5ef5: Pushed 
+cd7100a72410: Pushed 
+latest: digest: sha256:fe10dcac6d69dd9b8d8c5cf9891194b17160a3eb3c05f6c06559a7ab9da68b27 size: 1572
 
-$ helm upgrade --install sample-nodejs-development charts/sample-nodejs --namespace development --devel  --set fullnameOverride=sample-nodejs --set namespace=development
-Release "sample-nodejs-development" does not exist. Installing it now.
-NAME: sample-nodejs-development
-LAST DEPLOYED: Thu Nov 14 15:31:57 2019
+$ helm upgrade --install simple-web-development charts/simple-web --namespace development                         --devel                          --set fullnameOverride=simple-web                         --set namespace=development
+Release "simple-web-development" does not exist. Installing it now.
+NAME:   simple-web-development
+LAST DEPLOYED: Mon Dec 30 06:03:24 2019
 NAMESPACE: development
 STATUS: DEPLOYED
 
 RESOURCES:
 ==> v1/Deployment
-NAME READY  UP-TO-DATE  AVAILABLE  AGE
-sample-nodejs  0/1  1 0  0s
+NAME        READY  UP-TO-DATE  AVAILABLE  AGE
+simple-web  0/1    1           0          0s
 
 ==> v1/Pod(related)
-NAME  READY  STATUS RESTARTS  AGE
-sample-nodejs-7cd6b798b6-4hcdm  0/1  ContainerCreating  0 0s
+NAME                         READY  STATUS             RESTARTS  AGE
+simple-web-85b98664dc-mv42g  0/1    ContainerCreating  0         0s
 
 ==> v1/Service
-NAME TYPE CLUSTER-IP EXTERNAL-IP  PORT(S)  AGE
-sample-nodejs  ClusterIP  10.96.143.222  <none> 80/TCP 0s
- 
+NAME        TYPE       CLUSTER-IP      EXTERNAL-IP  PORT(S)  AGE
+simple-web  ClusterIP  10.109.103.239  <none>       80/TCP   0s
+
 ==> v1beta1/Ingress
-NAME HOSTS ADDRESS  PORTS  AGE
-sample-nodejs  sample-nodejs.127.0.0.1.nip.io  80 0s
+NAME        HOSTS                        ADDRESS  PORTS  AGE
+simple-web  simple-web.127.0.0.1.nip.io  80       0s
 
 ==> v2beta1/HorizontalPodAutoscaler
-NAME REFERENCE TARGETS MINPODS  MAXPODS  REPLICAS  AGE
-sample-nodejs  Deployment/sample-nodejs  <unknown>/80%, <unknown>/80%  1  5  0 0s
+NAME        REFERENCE              TARGETS                       MINPODS  MAXPODS  REPLICAS  AGE
+simple-web  Deployment/simple-web  <unknown>/80%, <unknown>/80%  1        5        0         0s
+
 
 NOTES:
 1. Get the application URL by running these commands:
 
-$ helm ls sample-nodejs-development
-NAME REVISION  UPDATED STATUS  CHART APP VERSION  NAMESPACE
-sample-nodejs-development  1 Thu Nov 14 15:31:57 2019  DEPLOYED  sample-nodejs-v0.0.0  v0.0.0 development
 
+$ helm ls simple-web-development
+NAME                  	REVISION	UPDATED                 	STATUS  	CHART            	APP VERSION	NAMESPACE  
+simple-web-development	1       	Mon Dec 30 06:03:24 2019	DEPLOYED	simple-web-v0.0.0	v0.0.0     	development
 
-$ kubectl get pod -n development | grep sample-nodejs
-sample-nodejs-7cd6b798b6-4hcdm 0/1 ContainerCreating 0  1s
-sample-nodejs-7cd6b798b6-4hcdm 0/1 Running 0  3s
- 
+$ kubectl get pod -n development | grep simple-web
+simple-web-85b98664dc-mv42g   0/1     ContainerCreating   0          1s
+simple-web-85b98664dc-mv42g   0/1     Running   0          3s
+
 + valve on success
-test-nodejs$ 
+
+hands-on-web$
 ```
 
 ### 배포 결과 확인
-valve ls 명령을 사용하여 k8s에 배포된 pod 목록을 조회한다 
+`valve get` 명령을 사용하여 k8s에 배포된 pod 목록을 조회한다 
 ```
+valve get --help
+
 valve get -a
 valve get --all
+
+valve get -p
 ```
 
 수행 화면
 ```
-test-nodejs$ valve get -a
+hands-on-web$ valve get -a
+$ helm ls --all
+NAME                  	REVISION	UPDATED                 	STATUS  	CHART                     	APP VERSION	NAMESPACE  
+docker-registry       	1       	Mon Dec 30 06:01:34 2019	DEPLOYED	docker-registry-1.7.0     	2.6.2      	kube-system
+heapster              	1       	Mon Dec 30 06:01:54 2019	DEPLOYED	heapster-0.3.2            	1.5.2      	kube-system
+kubernetes-dashboard  	1       	Mon Dec 30 06:01:40 2019	DEPLOYED	kubernetes-dashboard-1.4.0	1.10.1     	kube-system
+metrics-server        	1       	Mon Dec 30 06:01:45 2019	DEPLOYED	metrics-server-2.5.1      	0.3.1      	kube-system
+nginx-ingress         	1       	Mon Dec 30 06:01:28 2019	DEPLOYED	nginx-ingress-1.4.0       	0.23.0     	kube-system
+simple-web-development	1       	Mon Dec 30 06:03:24 2019	DEPLOYED	simple-web-v0.0.0         	v0.0.0     	development
 
-$ helm ls --all | grep development
-NAME REVISION  UPDATED STATUS  CHART APP VERSION  NAMESPACE
-sample-nodejs-development  1 Thu Nov 14 15:31:57 2019  DEPLOYED  sample-nodejs-v0.0.0  v0.0.0 development
+$ kubectl get all --all-namespaces
+NAMESPACE     NAME                                                 READY   STATUS    RESTARTS   AGE
+development   pod/simple-web-85b98664dc-mv42g                      1/1     Running   0          5m25s
+kube-system   pod/coredns-86c58d9df4-5zgrw                         1/1     Running   2          5d21h
+kube-system   pod/coredns-86c58d9df4-nfd89                         1/1     Running   2          5d21h
+kube-system   pod/docker-registry-5979c99fc7-p7pn7                 1/1     Running   0          7m15s
+kube-system   pod/etcd-minikube                                    1/1     Running   2          5d21h
+kube-system   pod/heapster-heapster-69cb59b6c5-8xlxw               2/2     Running   0          6m48s
+kube-system   pod/kube-addon-manager-minikube                      1/1     Running   2          5d21h
+kube-system   pod/kube-apiserver-minikube                          1/1     Running   2          5d21h
+kube-system   pod/kube-controller-manager-minikube                 1/1     Running   2          5d21h
+kube-system   pod/kube-proxy-k24gk                                 1/1     Running   2          5d21h
+kube-system   pod/kube-scheduler-minikube                          1/1     Running   2          5d21h
+kube-system   pod/kubernetes-dashboard-7b68d4f78b-qf6qt            1/1     Running   0          7m9s
+kube-system   pod/metrics-server-7cd8d47f6d-hrdwg                  1/1     Running   0          7m4s
+kube-system   pod/nginx-ingress-controller-8445dcd6cf-l62lg        1/1     Running   0          7m20s
+kube-system   pod/nginx-ingress-default-backend-56d99b86fb-b8v2m   1/1     Running   0          7m20s
+kube-system   pod/storage-provisioner                              1/1     Running   3          5d21h
+kube-system   pod/tiller-deploy-664d6bdc7b-z5pq9                   1/1     Running   0          7m37s
 
-$ kubectl get pod,svc,ing -n development
-NAME READY STATUS  RESTARTS AGE
-pod/sample-nodejs-7cd6b798b6-4hcdm 1/1 Running 0  7m20s
+NAMESPACE     NAME                                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+default       service/kubernetes                      ClusterIP      10.96.0.1        <none>        443/TCP                      5d21h
+development   service/simple-web                      ClusterIP      10.109.103.239   <none>        80/TCP                       5m25s
+kube-system   service/docker-registry                 NodePort       10.109.17.210    <none>        5000:30500/TCP               7m15s
+kube-system   service/heapster                        ClusterIP      10.100.103.43    <none>        8082/TCP                     6m55s
+kube-system   service/kube-dns                        ClusterIP      10.96.0.10       <none>        53/UDP,53/TCP                5d21h
+kube-system   service/kubernetes-dashboard            ClusterIP      10.111.240.31    <none>        9090/TCP                     7m9s
+kube-system   service/metrics-server                  ClusterIP      10.105.5.55      <none>        443/TCP                      7m4s
+kube-system   service/nginx-ingress-controller        LoadBalancer   10.96.120.134    <pending>     80:30766/TCP,443:31333/TCP   7m20s
+kube-system   service/nginx-ingress-default-backend   ClusterIP      10.103.98.190    <none>        80/TCP                       7m20s
+kube-system   service/tiller-deploy                   ClusterIP      10.98.202.159    <none>        44134/TCP                    7m37s
 
-NAME  TYPE  CLUSTER-IP  EXTERNAL-IP PORT(S) AGE
-service/sample-nodejs ClusterIP 10.96.143.222 <none>  80/TCP  7m20s
- 
-NAME HOSTS  ADDRESS PORTS AGE
-ingress.extensions/sample-nodejs sample-nodejs.127.0.0.1.nip.io 80  7m20s
+NAMESPACE     NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+kube-system   daemonset.apps/kube-proxy   1         1         1       1            1           <none>          5d21h
 
-+
+NAMESPACE     NAME                                            READY   UP-TO-DATE   AVAILABLE   AGE
+development   deployment.apps/simple-web                      1/1     1            1           5m25s
+kube-system   deployment.apps/coredns                         2/2     2            2           5d21h
+kube-system   deployment.apps/docker-registry                 1/1     1            1           7m15s
+kube-system   deployment.apps/heapster-heapster               1/1     1            1           6m55s
+kube-system   deployment.apps/kubernetes-dashboard            1/1     1            1           7m9s
+kube-system   deployment.apps/metrics-server                  1/1     1            1           7m4s
+kube-system   deployment.apps/nginx-ingress-controller        1/1     1            1           7m20s
+kube-system   deployment.apps/nginx-ingress-default-backend   1/1     1            1           7m20s
+kube-system   deployment.apps/tiller-deploy                   1/1     1            1           7m37s
+
+NAMESPACE     NAME                                                       DESIRED   CURRENT   READY   AGE
+development   replicaset.apps/simple-web-85b98664dc                      1         1         1       5m25s
+kube-system   replicaset.apps/coredns-86c58d9df4                         2         2         2       5d21h
+kube-system   replicaset.apps/docker-registry-5979c99fc7                 1         1         1       7m15s
+kube-system   replicaset.apps/heapster-heapster-69cb59b6c5               1         1         1       6m48s
+kube-system   replicaset.apps/heapster-heapster-8659cd9d7                0         0         0       6m55s
+kube-system   replicaset.apps/kubernetes-dashboard-7b68d4f78b            1         1         1       7m9s
+kube-system   replicaset.apps/metrics-server-7cd8d47f6d                  1         1         1       7m4s
+kube-system   replicaset.apps/nginx-ingress-controller-8445dcd6cf        1         1         1       7m20s
+kube-system   replicaset.apps/nginx-ingress-default-backend-56d99b86fb   1         1         1       7m20s
+kube-system   replicaset.apps/tiller-deploy-664d6bdc7b                   1         1         1       7m37s
+
+NAMESPACE     NAME                                             REFERENCE               TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
+development   horizontalpodautoscaler.autoscaling/simple-web   Deployment/simple-web   1%/80%, 1%/80%   1         5         1          5m25s
 ```
-"$ kubectl get pod,svc,ing -n development" 부분에 표시된 수행되는 pod이 1개 일 경우 정상 구동이다
-sample-nodejs.127.0.0.1.nip.io에 접속하여 화면을 확인한다
+
+### 샘플 프로젝트 구동 확인
+`valve get -i` 를 통해 URL을 확인하여 구동 여부를 확인할 수 있습니다.
+```
+~$ valve get -i
+
+$ kubectl get ing -n development
+NAME         HOSTS                         ADDRESS   PORTS   AGE
+simple-web   simple-web.127.0.0.1.nip.io             80      9m51s
+```
 
 ### 샘플 프로젝트 삭제
 ```
+valve get --helm
+
 valve off --helm 
 ```
 
 수행 화면
 ```
-test-nodejs$ valve off --helm sample-nodejs-development
-  
+hands-on-web$ valve get --helm
+
+$ helm ls --all | grep development
+simple-web-development	1       	Mon Dec 30 06:03:24 2019	DEPLOYED	simple-web-v0.0.0         	v0.0.0     	development
+
+$ kubectl get pod,svc,ing -n development
+NAME                              READY   STATUS    RESTARTS   AGE
+pod/simple-web-85b98664dc-mv42g   1/1     Running   0          10m
+
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)   AGE
+service/simple-web   ClusterIP   10.109.103.239   <none>        80/TCP    10m
+
+NAME                            HOSTS                         ADDRESS   PORTS   AGE
+ingress.extensions/simple-web   simple-web.127.0.0.1.nip.io             80      10m
+
+hands-on-web$ valve off --helm simple-web-development
+release "simple-web-development" deleted
+
++ 
 ```
-샘플 프로젝트를 선택하여 삭제 한다
+샘플 프로젝트를 `valve get --helm` 수행하여 선택하고 삭제 한다
 
 
 ### valve로 원격 프로젝트 로컬에서 실행하기
@@ -329,6 +445,8 @@ dr-alertnow-consumer
 sample-vue
 sample-web
 ...
+
++
 ```
 
 ```
@@ -353,7 +471,7 @@ v0.0.1-20191004-0857
 ```
 검색한 chart 이름과 version을 이용하여 valve on
 
-~$ value on -e sample-vue:v0.0.1-20191004-0857
+~$ valve on -e sample-vue:v0.0.1-20191004-0857
 
 # sample-vue:v0.0.1-20191004-0857
 sample-vue:v0.0.1-20191004-0857
