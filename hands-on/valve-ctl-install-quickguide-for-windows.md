@@ -1,6 +1,51 @@
 # `valve-ctl` (Valve Ctrl) 를 설치 가이드
 
 설치 가이드는 Windows 10 기준으로 합니다.
+Windows 10에서는 두가지 방식으로 kubernetes 로컬 환경을 구축할 수 있습니다.
+- Using Vagrant
+- Docker for Desktop
+
+# Docker for Desktop
+Docker for desktop 은 다음 설정이 있어야 가능합니다. (https://docs.docker.com/docker-for-windows/install/)
+
+- Windows 10 64-bit: Pro, Enterprise, or Education (Build 15063 or later).
+- Hyper-V and Containers Windows features must be enabled.
+
+
+## Docker for desktop Client 설치
+- 공유 파일서버
+  - docker 설치
+    - 최신버전 설치
+      - docker login 과정도 필요하므로 사이트에서 회원가입 후, 최신버전으로 다운받아 설치합니다.
+      - docker-ce-desktop-windows
+    - 사이트에서 다운로드가 불가능하다면 공유파일서버의 설치파일을 이용
+      - \\FileServer01\BESPIN\SRE_Lab\Docker for Windows Installer.exe
+    - tools 설치 스크립트
+      - 관리자(Administrator) 권한으로 실행
+    - \\FileServer01\BESPIN\SRE_Lab\install_choco_k8s_java_node.cmd
+
+## 스크립트로 설치가 안될경우 단계별 설치
+
+chocolatey 설치
+```
+@"%SystemRoot%System32WindowsPowerShellv1.0powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+```
+
+git, kubernetes cli, helm, draft, jq 설치
+
+```
+choco install -y git kubernetes-cli kubernetes-helm draft jq
+```
+
+jdk8, maven (필요할 경우)
+```
+choco install -y jdk8 maven
+```
+
+nodejs (필요할 경우)
+```
+choco install -y nodejs
+```
 
 # Install Vagrant in Windows 10
 
