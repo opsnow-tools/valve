@@ -100,6 +100,29 @@ hands-on-web$ valve get --helm
 hands-on-web$ valve off --helm sample-web-development
 ```
 
+## 샘플 프로젝트 배포하기
+샘플 프로젝트를 운영 환경에 배포하는 방법을 간략하게 설명합니다. 배포 대상 쿠버네티스 클러스터와 DevOps 툴체인은 밸브 프로젝트(valve-eks, valve-tools)를 사용해서 미리 준비해 두어야 합니다. 밸브 프로젝트를 사용해서 클러스터와 DevOps 툴체인을 구성하는 방법은 [다음](./valve-devops-quickstart.md) 문서를 참고하세요.
+여기에서는 미리 깃헙에 등록해 둔 [https://github.com/gelius7/sample-vue.git](https://github.com/gelius7/sample-vue.git) 프로젝트를 예제로 사용해서 설명합니다.
+
+미리 생성해 둔 Jenkins에 로그인해서 샘플 프로젝트의 CI/CD 파이프라인을 생성합니다.
+
+1. New Item 클릭
+1. Item 이름 입력
+1. Multibranch Pipeline 선택
+1. Branch Source > GitHub > Repository HTTPS URL 항목에 [https://github.com/gelius7/sample-vue.git](https://github.com/gelius7/sample-vue.git) 등록
+
+젠킨스에서 배포가 정상적으로 이루어지면 아래 명령어를 이용해 접속 도메인 정보를 확인합니다.
+
+```bash
+kubectl get ing -A
+```
+
+웹 브라우저로 아래 URL에 접속하여 웹 페이지가 정상적으로 나오는지 확인합니다.
+
+```bash
+http://sample-vue-dev.{name}.{public domain}
+```
+
 ## 더 보기
 `valve-ctl` 프로젝트에 대한 좀 더 상세한 소개는 다음 문서를 참고하세요.
 * [valve-ctl 프로젝트](https://github.com/opsnow-tools/valve-ctl)
