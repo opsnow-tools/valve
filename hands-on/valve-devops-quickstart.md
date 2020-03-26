@@ -102,10 +102,6 @@ Enter your ingress domain [seoul-sre-{name}-eks.{root domain}] : {name}.{root do
 
 k8s 시스템 어플리케이션을 설치합니다.
 
->**Note**:
-앞으로 설치될 모든 툴들은 검증된 구 버전과 최신 버젼을 선택할 수 있습니다.  
-이 문서에서는 검증된 구 버젼을 기준으로 설치를 진행합니다.
-
 ### 3-a) cluster-autoscaler
 
 cluster-node를 자동으로 늘려주는 툴 입니다.
