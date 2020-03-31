@@ -224,17 +224,6 @@ Jenkins -> Manage Jenkins -> Configure System -> Kubernetes URL에 443포트로 
 https://kubernetes.default:443
 ```
 
-#### EKS 클러스트 롤 바인딩
-
-valve-tools 설치된 폴더로 이동해서 다음 명령어 실행합니다.
-
-```bash
-cd valve-tools/templates/jenkins
-kubectl apply -f jenkins-rollbinding.yaml
-kubectl get clusterrolebinding    # 롤 바인딩 정보 조회, valve:jenkins 정보 있는지 확인한다.
-kubectl get clusterrolebinding valve:jenkins -o yaml      # 상세 정보 조회
-```
-
 ### sample 프로젝트 배포
 
 #### Multibranch Pipeline 생성
